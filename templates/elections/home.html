@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Home — CampusVote{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="bi bi-check2-square"></i> Your Voice, Your Vote
+        </h1>
+        <p class="lead mb-4">
+            CampusVote makes student elections secure, transparent,
+            and accessible. Cast your vote from any device.
+        </p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'accounts:register' %}"
+               class="btn btn-light btn-lg me-2">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+            <a href="{% url 'accounts:login' %}"
+               class="btn btn-outline-light btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        {% else %}
+            <a href="{% url 'elections:dashboard' %}"
+               class="btn btn-light btn-lg">
+                <i class="bi bi-speedometer2"></i> Go to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Active Elections -->
+<div class="container py-5">
+    {% if active_elections %}
+        <h2 class="mb-4">
+            <i class="bi bi-lightning-charge text-success"></i>
+            Active Elections
+        </h2>
+        <div class="row g-4">
+            {% for election in active_elections %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card election-card h-100">
+                        <div class="card-body">
+                            <span class="badge bg-success mb-2">
+                                Active
+                            </span>
+                            <h5 class="card-title">
+                                {{ election.title }}
+                            </h5>
+                            <p class="card-text text-muted">
+                                {{ election.description|truncatewords:20 }}
+                            </p>
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-calendar"></i>
+                                {{ election.start_date|date:"d M Y" }} —
+                                {{ election.end_date|date:"d M Y" }}
+                            </div>
+                            <a href="{% url 'elections:election_detail' election.pk %}"
+                               class="btn btn-primary btn-sm">
+                                View Details
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <h3 class="mt-3">No Active Elections</h3>
+            <p class="text-muted">
+                Check back soon for upcoming elections.
+            </p>
+        </div>
+    {% endif %}
+
+    <!-- Closed Elections with Results -->
+    {% if closed_elections %}
+        <h2 class="mt-5 mb-4">
+            <i class="bi bi-bar-chart text-primary"></i>
+            Recent Results
+        </h2>
+        <div class="row g-4">
+            {% for election in closed_elections %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <span class="badge bg-secondary mb-2">
+                                Closed
+                            </span>
+                            <h5 class="card-title">
+                                {{ election.title }}
+                            </h5>
+                            <div class="small text-muted mb-3">
+                                Ended {{ election.end_date|date:"d M Y" }}
+                            </div>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'elections:results' election.pk %}"
+                                   class="btn btn-outline-primary btn-sm">
+                                    View Results
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Login to View Results
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- How it Works -->
+    <section class="mt-5 pt-4">
+        <h2 class="text-center mb-4">How CampusVote Works</h2>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-3">
+                    <i class="bi bi-person-plus display-4 text-primary"></i>
+                    <h4 class="mt-3">1. Register</h4>
+                    <p class="text-muted">
+                        Create your account with your student ID
+                        and school email.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3">
+                    <i class="bi bi-search display-4 text-primary"></i>
+                    <h4 class="mt-3">2. Review Candidates</h4>
+                    <p class="text-muted">
+                        Read manifestos and learn about each
+                        candidate's platform.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3">
+                    <i class="bi bi-check2-circle display-4 text-primary"></i>
+                    <h4 class="mt-3">3. Cast Your Vote</h4>
+                    <p class="text-muted">
+                        Select your preferred candidate. It's
+                        secure and confidential.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
