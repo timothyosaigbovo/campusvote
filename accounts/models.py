@@ -28,10 +28,11 @@ class StudentProfile(models.Model):
     ]
 
     YEAR_GROUP_CHOICES = [
+        ('year_7', 'Year 7'),
+        ('year_8', 'Year 8'),
+        ('year_9', 'Year 9'),
         ('year_10', 'Year 10'),
         ('year_11', 'Year 11'),
-        ('year_12', 'Year 12'),
-        ('year_13', 'Year 13'),
     ]
 
     user = models.OneToOneField(
@@ -49,7 +50,7 @@ class StudentProfile(models.Model):
     year_group = models.CharField(
         max_length=10,
         choices=YEAR_GROUP_CHOICES,
-        default='year_10'
+        default='year_7'
     )
     role = models.CharField(
         max_length=10,
