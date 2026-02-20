@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ candidate.student_profile.user.get_full_name }} — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <a href="{% url 'elections:election_detail' candidate.position.election.pk %}"
+       class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left"></i> Back to Election
+    </a>
+
+    <div class="card">
+        <!-- Header -->
+        <div class="card-header bg-primary text-white p-4">
+            <div class="d-flex align-items-center gap-3">
+                {% if candidate.photo %}
+                    <img src="{{ candidate.photo.url }}"
+                         alt="{{ candidate.student_profile.user.get_full_name }}"
+                         class="rounded-circle"
+                         width="80" height="80"
+                         style="object-fit: cover; border: 3px solid white;">
+                {% else %}
+                    <div class="bg-white text-primary rounded-circle
+                                d-flex align-items-center justify-content-center"
+                         style="width:80px; height:80px; font-size:1.8rem;
+                                font-weight:700;">
+                        {{ candidate.student_profile.user.first_name.0 }}{{ candidate.student_profile.user.last_name.0 }}
+                    </div>
+                {% endif %}
+                <div>
+                    <h2 class="mb-0">
+                        {{ candidate.student_profile.user.get_full_name }}
+                    </h2>
+                    <span class="badge bg-light text-dark me-1">
+                        {{ candidate.position.title }} Candidate
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        {{ candidate.student_profile.get_year_group_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Manifesto -->
+            <h4 class="mb-3">Manifesto</h4>
+            {% if candidate.manifesto %}
+                <p class="lead" style="line-height: 1.7;">
+                    {{ candidate.manifesto|linebreaksbr }}
+                </p>
+            {% else %}
+                <p class="text-muted">
+                    No manifesto provided.
+                </p>
+            {% endif %}
+
+            <!-- Details -->
+            <hr>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <small class="text-muted">Student ID</small><br>
+                        <strong>
+                            {{ candidate.student_profile.student_id|default:"N/A" }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <small class="text-muted">Year Group</small><br>
+                        <strong>
+                            {{ candidate.student_profile.get_year_group_display }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded">
+                        <small class="text-muted">Position</small><br>
+                        <strong>{{ candidate.position.title }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
