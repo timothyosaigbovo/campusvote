@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Management — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">
+        <i class="bi bi-people"></i> Voter Management
+    </h1>
+
+    {% if students %}
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Student ID</th>
+                            <th>Year Group</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center
+                                                gap-2">
+                                        <div class="bg-primary text-white
+                                                    rounded-circle d-flex
+                                                    align-items-center
+                                                    justify-content-center"
+                                             style="width:32px; height:32px;
+                                                    font-size:0.8rem;">
+                                            {{ student.user.first_name.0 }}{{ student.user.last_name.0 }}
+                                        </div>
+                                        <strong>
+                                            {{ student.user.get_full_name }}
+                                        </strong>
+                                    </div>
+                                </td>
+                                <td class="font-monospace text-muted">
+                                    {{ student.student_id|default:"—" }}
+                                </td>
+                                <td>
+                                    {{ student.get_year_group_display }}
+                                </td>
+                                <td>
+                                    {% if student.is_eligible %}
+                                        <span class="badge bg-success">
+                                            Eligible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            Suspended
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden"
+                                               name="profile_id"
+                                               value="{{ student.pk }}">
+                                        <button type="submit"
+                                                class="btn btn-sm
+                                                {% if student.is_eligible %}
+                                                    btn-outline-danger
+                                                {% else %}
+                                                    btn-outline-success
+                                                {% endif %}">
+                                            {% if student.is_eligible %}
+                                                Suspend
+                                            {% else %}
+                                                Reinstate
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people display-1 text-muted"></i>
+            <h3 class="mt-3">No Students Registered</h3>
+            <p class="text-muted">
+                Students will appear here once they register.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
