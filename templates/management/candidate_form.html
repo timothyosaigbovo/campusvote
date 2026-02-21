@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Candidate — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <a href="{% url 'management:election_detail' election.pk %}"
+               class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="bi bi-arrow-left"></i>
+                Back to {{ election.title }}
+            </a>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <h2 class="mb-4">
+                        {{ action }} Candidate
+                    </h2>
+                    <p class="text-muted">
+                        Position: {{ position.title }}
+                        · {{ election.title }}
+                    </p>
+
+                    <form method="POST"
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_student_profile"
+                                   class="form-label">
+                                Student *
+                            </label>
+                            {{ form.student_profile }}
+                            {% if form.student_profile.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.student_profile.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_manifesto"
+                                   class="form-label">
+                                Manifesto
+                            </label>
+                            {{ form.manifesto }}
+                            <small class="text-muted">
+                                Max 2000 characters
+                            </small>
+                            {% if form.manifesto.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.manifesto.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_photo"
+                                   class="form-label">
+                                Photo
+                            </label>
+                            {{ form.photo }}
+                            <small class="text-muted">
+                                JPEG, PNG, or WebP. Max 5MB.
+                            </small>
+                            {% if form.photo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.photo.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.is_approved }}
+                            <label for="id_is_approved"
+                                   class="form-check-label">
+                                Approved
+                            </label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                {{ action }} Candidate
+                            </button>
+                            <a href="{% url 'management:election_detail' election.pk %}"
+                               class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
