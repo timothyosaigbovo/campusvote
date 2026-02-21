@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.title }} — Admin — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <a href="{% url 'management:election_list' %}"
+       class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left"></i> Back to Elections
+    </a>
+
+    <!-- Election Header -->
+    <div class="d-flex justify-content-between align-items-start
+                flex-wrap gap-2 mb-4">
+        <div>
+            <h1>{{ election.title }}</h1>
+            <p class="text-muted">{{ election.description }}</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge bg-{% if election.status == 'active' %}success{% elif election.status == 'draft' %}warning{% elif election.status == 'closed' %}secondary{% else %}dark{% endif %} fs-6">
+                    {{ election.get_status_display }}
+                </span>
+                {% if election.results_published %}
+                    <span class="badge bg-info fs-6">
+                        Results Published
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'management:election_update' election.pk %}"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a href="{% url 'management:analytics' election.pk %}"
+               class="btn btn-outline-info btn-sm">
+                <i class="bi bi-bar-chart"></i> Analytics
+            </a>
+            <a href="{% url 'management:export_csv' election.pk %}"
+               class="btn btn-outline-success btn-sm">
+                <i class="bi bi-download"></i> CSV
+            </a>
+            <a href="{% url 'management:election_delete' election.pk %}"
+               class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <!-- Election Info -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="card text-center">
+                <div class="card-body py-2">
+                    <small class="text-muted">Start</small><br>
+                    <strong>
+                        {{ election.start_date|date:"d M Y H:i" }}
+                    </strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center">
+                <div class="card-body py-2">
+                    <small class="text-muted">End</small><br>
+                    <strong>
+                        {{ election.end_date|date:"d M Y H:i" }}
+                    </strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center">
+                <div class="card-body py-2">
+                    <small class="text-muted">Eligible</small><br>
+                    <strong>{{ election.eligible_year_groups }}</strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center">
+                <div class="card-body py-2">
+                    <small class="text-muted">Positions</small><br>
+                    <strong>{{ positions.count }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Positions -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Positions</h2>
+        <a href="{% url 'management:position_create' election.pk %}"
+           class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Add Position
+        </a>
+    </div>
+
+    {% for position in positions %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between
+                            align-items-center flex-wrap gap-2 mb-2">
+                    <div>
+                        <h5 class="mb-1">{{ position.title }}</h5>
+                        <small class="text-muted">
+                            {{ position.description }}
+                            · Order: {{ position.display_order }}
+                        </small>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'management:position_update' position.pk %}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'management:position_delete' position.pk %}"
+                           class="btn btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Candidates -->
+                <div class="ms-3">
+                    <div class="d-flex justify-content-between
+                                align-items-center mb-2">
+                        <strong class="small text-muted">
+                            Candidates
+                            ({{ position.candidates.count }}/{{ position.max_candidates }})
+                        </strong>
+                        {% if position.candidates.count < position.max_candidates %}
+                            <a href="{% url 'management:candidate_create' position.pk %}"
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-person-plus"></i>
+                                Add Candidate
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    {% for candidate in position.candidates.all %}
+                        <div class="d-flex justify-content-between
+                                    align-items-center p-2 border
+                                    rounded mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if candidate.photo %}
+                                    <img src="{{ candidate.photo.url }}"
+                                         class="rounded-circle"
+                                         width="35" height="35"
+                                         alt="{{ candidate.student_profile.user.get_full_name }}"
+                                         style="object-fit:cover;">
+                                {% else %}
+                                    <div class="bg-primary text-white
+                                                rounded-circle d-flex
+                                                align-items-center
+                                                justify-content-center"
+                                         style="width:35px; height:35px;
+                                                font-size:0.8rem;">
+                                        {{ candidate.student_profile.user.first_name.0 }}{{ candidate.student_profile.user.last_name.0 }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong class="small">
+                                        {{ candidate.student_profile.user.get_full_name }}
+                                    </strong>
+                                    {% if not candidate.is_approved %}
+                                        <span class="badge bg-warning
+                                                     text-dark ms-1">
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'management:candidate_update' candidate.pk %}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'management:candidate_delete' candidate.pk %}"
+                                   class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted small">
+                            No candidates yet.
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-center py-4">
+            <p class="text-muted">
+                No positions yet. Add positions to this election.
+            </p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
