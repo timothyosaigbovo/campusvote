@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1 text-danger fw-bold">500</h1>
+            <h2 class="mb-3">Something Went Wrong</h2>
+            <p class="text-muted mb-4">
+                We're sorry, an unexpected error has occurred.
+                Our team has been notified. Please try again
+                later or navigate back to the home page.
+            </p>
+            <a href="{% url 'elections:home' %}"
+               class="btn btn-primary">
+                <i class="bi bi-house"></i> Go Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
