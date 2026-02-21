@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Election — CampusVote{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <a href="{% url 'management:election_list' %}"
+               class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Elections
+            </a>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <h2 class="mb-4">
+                        <i class="bi bi-{% if action == 'Create' %}plus-circle{% else %}pencil{% endif %}"></i>
+                        {{ action }} Election
+                    </h2>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_title"
+                                   class="form-label">
+                                Title *
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description"
+                                   class="form-label">
+                                Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_start_date"
+                                       class="form-label">
+                                    Start Date *
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.start_date.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_end_date"
+                                       class="form-label">
+                                    End Date *
+                                </label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.end_date.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_status"
+                                       class="form-label">
+                                    Status
+                                </label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_eligible_year_groups"
+                                       class="form-label">
+                                    Eligible Year Groups
+                                </label>
+                                {{ form.eligible_year_groups }}
+                                <small class="text-muted">
+                                    Comma-separated, e.g.:
+                                    year_7,year_8,year_9,year_10,year_11
+                                </small>
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                {{ action }} Election
+                            </button>
+                            <a href="{% url 'management:election_list' %}"
+                               class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
