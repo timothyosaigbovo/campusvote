@@ -311,7 +311,7 @@ def results_view(request, pk):
         results_data.append({
             'position': position,
             'total_votes': total_votes,
-            'candidate_results': candidate_results,
+            'candidates': candidate_results,
         })
 
     context = {
