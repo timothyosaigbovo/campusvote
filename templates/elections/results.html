@@ -1,137 +1,75 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Results — {{ election.title }} — CampusVote{% endblock %}
-
-{% block extra_css %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-{% endblock %}
+{% block title %}Results — {{ election.title }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <a href="{% url 'elections:dashboard' %}"
-       class="btn btn-outline-secondary btn-sm mb-3">
-        <i class="bi bi-arrow-left"></i> Back to Dashboard
-    </a>
 
-    <div class="d-flex justify-content-between align-items-start
-                flex-wrap gap-2 mb-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1>Election Results</h1>
-            <p class="text-muted">
-                {{ election.title }} ·
-                Published {{ election.updated_at|date:"d M Y" }}
+            <h2 class="fw-bold mb-1">{{ election.title }}</h2>
+            <p class="text-muted mb-0">
+                Election results
+                {% if election.end_date %}
+                    &middot; Closed {{ election.end_date|date:"j M Y" }}
+                {% endif %}
             </p>
         </div>
+        <a href="{% url 'elections:dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
     </div>
 
-    {% for item in results_data %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between
-                            align-items-center mb-3">
-                    <h4 class="mb-0">{{ item.position.title }}</h4>
-                    <span class="text-muted">
-                        {{ item.total_votes }} total votes
-                    </span>
-                </div>
-
-                <div class="row">
-                    <!-- Bar results -->
-                    <div class="col-md-8">
-                        {% for result in item.candidate_results %}
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between
-                                            align-items-center mb-1">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <strong>
-                                            {{ result.candidate.student_profile.user.get_full_name }}
-                                        </strong>
-                                        {% if result.is_winner %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-trophy"></i>
-                                                Winner
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <span class="text-muted">
-                                        {{ result.votes }}
-                                        ({{ result.percentage }}%)
-                                    </span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar
-                                                {% if result.is_winner %}
-                                                    bg-success
-                                                {% endif %}"
-                                         role="progressbar"
-                                         style="width: {{ result.percentage }}%"
-                                         aria-valuenow="{{ result.percentage }}"
-                                         aria-valuemin="0"
-                                         aria-valuemax="100">
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- Chart -->
-                    <div class="col-md-4">
-                        {% if item.total_votes > 0 %}
-                            <canvas id="chart-{{ item.position.pk }}"
-                                    height="200"></canvas>
-                        {% else %}
-                            <p class="text-center text-muted mt-4">
-                                No votes recorded
-                            </p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+    {% if not results_data %}
+        <div class="alert alert-info">
+            No positions or candidates found for this election.
         </div>
-    {% endfor %}
-</div>
-{% endblock %}
+    {% endif %}
 
-{% block extra_js %}
-<script>
-    const chartColors = [
-        '#0d6efd', '#198754', '#ffc107', '#dc3545',
-        '#6f42c1', '#d63384', '#0dcaf0', '#fd7e14'
-    ];
-
+    <!-- Results by Position -->
     {% for item in results_data %}
-        {% if item.total_votes > 0 %}
-            new Chart(
-                document.getElementById('chart-{{ item.position.pk }}'),
-                {
-                    type: 'doughnut',
-                    data: {
-                        labels: [
-                            {% for result in item.candidate_results %}
-                                '{{ result.candidate.student_profile.user.get_full_name|escapejs }}',
-                            {% endfor %}
-                        ],
-                        datasets: [{
-                            data: [
-                                {% for result in item.candidate_results %}
-                                    {{ result.votes }},
-                                {% endfor %}
-                            ],
-                            backgroundColor: chartColors,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: { font: { size: 11 } }
-                            }
-                        }
-                    }
-                }
-            );
-        {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-semibold">{{ item.position.title }}</h5>
+            <small class="text-muted">
+                {{ item.total_votes }} vote{{ item.total_votes|pluralize }} cast
+            </small>
+        </div>
+        <div class="card-body">
+            {% if item.candidates %}
+                {% for entry in item.candidates %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div>
+                            <strong>{{ entry.candidate.student_profile.user.get_full_name }}</strong>
+                            {% if forloop.first and item.total_votes > 0 %}
+                                <span class="badge bg-success ms-2">Leading</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-muted">
+                            {{ entry.votes }} vote{{ entry.votes|pluralize }}
+                            ({{ entry.percentage }}%)
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 24px;">
+                        <div class="progress-bar {% if forloop.first %}bg-primary{% else %}bg-secondary{% endif %}"
+                             role="progressbar"
+                             style="width: {{ entry.percentage }}%;"
+                             aria-valuenow="{{ entry.percentage }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">No approved candidates for this position.</p>
+            {% endif %}
+        </div>
+    </div>
     {% endfor %}
-</script>
+
+</div>
 {% endblock %}

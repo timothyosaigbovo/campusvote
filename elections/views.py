@@ -75,3 +75,69 @@ def dashboard_view(request):
                 election.progress_percentage = int(
                     (voted_positions / total_positions) * 100
                 )
+
+
+
+@login_required
+def results_view(request, pk):
+    """
+    Display published results for a closed election.
+    Shows vote counts and percentages per candidate,
+    grouped by position.
+    """
+    election = get_object_or_404(Election, pk=pk)
+
+    # Guard: only show results if they've been published
+    if not election.results_published:
+        messages.error(
+            request,
+            'Results for this election have not been '
+            'published yet.'
+        )
+        return redirect('elections:dashboard')
+
+    positions = election.positions.all().prefetch_related(
+        'candidates',
+        'candidates__student_profile',
+        'candidates__student_profile__user',
+    )
+
+    results_data = []
+    for position in positions:
+        candidates = position.candidates.filter(
+            is_approved=True
+        ).select_related(
+            'student_profile', 'student_profile__user'
+        )
+        total_votes = position.total_votes()
+
+        candidate_data = []
+        for candidate in candidates:
+            votes = candidate.vote_count()
+            percentage = (
+                round((votes / total_votes) * 100, 1)
+                if total_votes > 0 else 0
+            )
+            candidate_data.append({
+                'candidate': candidate,
+                'votes': votes,
+                'percentage': percentage,
+            })
+
+        candidate_data.sort(
+            key=lambda x: x['votes'], reverse=True
+        )
+
+        results_data.append({
+            'position': position,
+            'total_votes': total_votes,
+            'candidates': candidate_data,
+        })
+
+    context = {
+        'election': election,
+        'results_data': results_data,
+    }
+    return render(
+        request, 'elections/results.html', context
+    )
