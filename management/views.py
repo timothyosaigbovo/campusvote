@@ -690,3 +690,23 @@ def audit_logs_view(request):
     return render(
         request, 'management/audit_logs.html', context
     )
+
+# ─────────────────────────────────────────────────
+# ADD THIS TO THE BOTTOM OF management/views.py
+# ─────────────────────────────────────────────────
+
+
+@admin_or_observer_required
+def results_list_view(request):
+    """List all elections with published results."""
+    elections = Election.objects.filter(
+        status='closed', results_published=True
+    ).annotate(
+        position_count=Count('positions'),
+        candidate_count=Count('positions__candidates'),
+    ).order_by('-end_date')
+
+    context = {'elections': elections}
+    return render(
+        request, 'management/results_list.html', context
+    )

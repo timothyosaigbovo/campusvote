@@ -71,6 +71,13 @@
                                            title="Analytics">
                                             <i class="bi bi-bar-chart"></i>
                                         </a>
+                                        {% if election.status == 'closed' and election.results_published %}
+                                        <a href="{% url 'elections:results' election.pk %}"
+                                           class="btn btn-outline-success"
+                                           title="View Results">
+                                            <i class="bi bi-trophy"></i>
+                                        </a>
+                                        {% endif %}
                                         <a href="{% url 'management:election_delete' election.pk %}"
                                            class="btn btn-outline-danger"
                                            title="Delete">

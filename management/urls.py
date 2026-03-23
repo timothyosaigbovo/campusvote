@@ -101,4 +101,11 @@ urlpatterns = [
         views.audit_logs_view,
         name='audit_logs'
     ),
+
+    # Results
+    path(
+        'results/',
+        views.results_list_view,
+        name='results_list'
+    ),
 ]
