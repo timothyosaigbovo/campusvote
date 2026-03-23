@@ -73,7 +73,7 @@ CampusVote provides value to its users by:
 **Feature Planning:**
 
 1. **Must Have (MVP):** User authentication, election CRUD, position and candidate management, voting with duplicate prevention, results display, role-based access control.
-2. **Should Have:** Audit logging, analytics with charts, CSV export, voter eligibility management, password reset, progress indicators.
+2. **Should Have:** Audit logging, analytics with charts, CSV export, voter eligibility management, password reset, progress indicators, published results management page.
 3. **Could Have (Future):** Email notifications on election start/end, candidate self-nomination workflow, real-time WebSocket vote count updates, multi-language support.
 
 All "Must Have" and "Should Have" features have been fully implemented.
@@ -86,7 +86,7 @@ The application is structured around three Django apps, each with a clear respon
 |-----|---------|---------------|
 | `accounts` | Authentication, registration, profile management, password reset | All users |
 | `elections` | Election browsing, voting, results viewing | Students, Observers |
-| `management` | CRUD operations, analytics, audit logs, voter management | Admins, Observers |
+| `management` | CRUD operations, analytics, audit logs, voter management, published results overview | Admins, Observers |
 
 ### Skeleton Plane
 
@@ -157,6 +157,8 @@ Wireframes were created for mobile, tablet, and desktop viewports using Balsamiq
 | 13 | As an admin, I want to export results to CSV. | ✅ |
 | 14 | As an admin, I want the system to log all administrative actions. | ✅ |
 | 15 | As an admin, I want to review audit logs for dispute resolution. | ✅ |
+| 16 | As an admin, I want a dedicated published results page in the Management menu to quickly access closed election results, analytics, and CSV exports. | ✅ |
+| 17 | As an admin, I want a "View Results" button on each closed election in the election list for quick access. | ✅ |
 
 ### Observer Stories
 
@@ -164,6 +166,7 @@ Wireframes were created for mobile, tablet, and desktop viewports using Balsamiq
 |---|-----------|:-----------:|
 | 1 | As an observer, I want read-only access to published results. | ✅ |
 | 2 | As an observer, I want to see turnout summaries for verification. | ✅ |
+| 3 | As an observer, I want to access published results from the Management menu. | ✅ |
 
 ---
 
@@ -185,7 +188,7 @@ Wireframes were created for mobile, tablet, and desktop viewports using Balsamiq
 - **Election Detail:** Positions with candidates and voting status per position.
 - **Candidate Detail:** Full profile with photo, manifesto, and student details.
 - **Voting:** Radio-button candidate selection with confirmation prompt. Database `UniqueConstraint` prevents duplicate votes.
-- **Results:** Vote counts, percentages, and Chart.js doughnut charts (only when published).
+- **Results:** Vote counts, percentages, progress bars, and Chart.js doughnut charts (only displayed when results are officially published).
 
 ### Admin Features
 
@@ -195,6 +198,8 @@ Wireframes were created for mobile, tablet, and desktop viewports using Balsamiq
 - **Candidate CRUD:** Student selection, manifesto, photo upload (max 5 MB), approval toggle.
 - **Voter Management:** Toggle eligibility to suspend/reinstate voting rights.
 - **Analytics:** Turnout by year group with progress bars, vote distribution with Chart.js charts.
+- **Published Results Page:** Dedicated management page (`/management/results/`) listing all closed elections with published results. Provides quick access to View Results, Analytics, and CSV Export for each election. Accessible from the Management dropdown menu.
+- **Election List Results Button:** Green trophy button appears in the Actions column for any closed election with published results, providing one-click access to the student-facing results page.
 - **CSV Export:** Download results with UTF-8 BOM for Excel compatibility.
 - **Audit Logs:** Filterable log of all admin actions with timestamp, user, action type, and IP address.
 
@@ -278,7 +283,7 @@ User ──── 1:1 ──── StudentProfile
 | Operation | URL | Method | Access |
 |-----------|-----|--------|--------|
 | **Create** | `/management/positions/<id>/candidates/create/` | POST | Admin |
-| **Read** | `/elections/candidate/<id>/` | GET | Authenticated |
+| **Read** | `/candidate/<id>/` | GET | Authenticated |
 | **Update** | `/management/candidates/<id>/edit/` | POST | Admin |
 | **Delete** | `/management/candidates/<id>/delete/` | POST | Admin |
 
@@ -286,8 +291,15 @@ User ──── 1:1 ──── StudentProfile
 
 | Operation | URL | Method | Access |
 |-----------|-----|--------|--------|
-| **Create** | `/elections/vote/<position_id>/` | POST | Eligible students |
-| **Read** | `/elections/results/<id>/` | GET | All (when published) |
+| **Create** | `/vote/<position_id>/` | POST | Eligible students |
+| **Read** | `/results/<id>/` | GET | All (when published) |
+
+### Results (Read-only)
+
+| Operation | URL | Method | Access |
+|-----------|-----|--------|--------|
+| **Student Results** | `/results/<id>/` | GET | Authenticated (when published) |
+| **Published Results List** | `/management/results/` | GET | Admin, Observer |
 
 ---
 
@@ -297,6 +309,7 @@ User ──── 1:1 ──── StudentProfile
 - **Secrets:** `SECRET_KEY` and `DATABASE_URL` stored as environment variables, `env.py` in `.gitignore`.
 - **Production headers:** `SECURE_SSL_REDIRECT`, HSTS, secure cookies, `X_FRAME_OPTIONS = 'DENY'`, `SECURE_CONTENT_TYPE_NOSNIFF`.
 - **Role-based access:** `@admin_required` and `@admin_or_observer_required` decorators on views, template-level conditional rendering.
+- **Results access control:** Student-facing results page checks `results_published` before displaying data. Management results list only shows closed elections with published results.
 - **Three-layer validation:** Form-level (Django forms), Model-level (`clean()` methods), Database-level (`UniqueConstraint`).
 - **CSRF protection:** All forms include `{% csrf_token %}`, all state changes use POST.
 

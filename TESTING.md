@@ -47,9 +47,9 @@ Each user story from the project planning phase was tested manually. Results are
 | S12 | Immediate visual confirmation | Cast a vote. | Success message appears immediately. | Green success alert appears, auto-dismisses after 5 seconds. | ✅ Pass |
 | S13 | Progress indicator | Vote for some positions in an election, not all. Return to dashboard. | Progress bar shows percentage of positions voted on. | Progress bar shows "2 of 4 positions voted" with 50% fill. | ✅ Pass |
 | S14 | Graceful error handling | Attempt to vote in a closed election by manipulating the URL. | Error message displayed. Vote not recorded. | "Voting is not currently open for this election" error. User redirected. | ✅ Pass |
-| S15 | Results only when published | Try to access results for an unpublished election. | Results not shown. | "Results have not been published yet" message displayed. | ✅ Pass |
-| S16 | Numeric counts and percentages | View published results. | Each candidate shows vote count and percentage. | Vote counts and percentages displayed correctly, summing to 100% per position. | ✅ Pass |
-| S17 | Visual charts | View published results. | Chart.js charts displayed for each position. | Doughnut charts rendered with colour-coded segments. | ✅ Pass |
+| S15 | Results only when published | Try to access results for an unpublished election. | Results not shown. | "Results have not been published yet" message displayed. User redirected to dashboard. | ✅ Pass |
+| S16 | Numeric counts and percentages | View published results. | Each candidate shows vote count and percentage. | Vote counts and percentages displayed correctly, summing to 100% per position. Progress bars show relative vote share. | ✅ Pass |
+| S17 | Visual charts | View published results. | Chart.js charts displayed for each position. | Doughnut charts rendered with colour-coded segments. Leading candidate highlighted with "Leading" badge. | ✅ Pass |
 
 ### Admin Stories
 
@@ -70,6 +70,8 @@ Each user story from the project planning phase was tested manually. Results are
 | A13 | CSV export | Click "Export CSV". | CSV file downloaded. | CSV downloaded with columns: Position, Candidate, Year Group, Votes, Percentage. Audit log entry created. | ✅ Pass |
 | A14 | System logs admin actions | Perform admin actions. Check audit logs. | Each action recorded. | All actions logged with timestamp, user, action type, description, and IP address. | ✅ Pass |
 | A15 | Review audit logs | Navigate to audit log page. Filter by action type. | Filtered entries displayed. | Audit log list filterable by action type. Most recent first. | ✅ Pass |
+| A16 | Published results management page | Navigate to Management → Results. | Page lists all closed elections with published results. | Published Results page displays election cards with View Results, Analytics, and Export CSV buttons. Shows "No Published Results" when none exist. | ✅ Pass |
+| A17 | View Results button on election list | Navigate to Management → Elections. Check closed election with published results. | Green trophy button appears in Actions column. | Trophy button displayed for closed elections with `results_published=True`. Button links to student-facing results page. Hidden for active/draft elections. | ✅ Pass |
 
 ### Observer Stories
 
@@ -77,6 +79,7 @@ Each user story from the project planning phase was tested manually. Results are
 |---|-----------|----------------|-----------------|---------------|:---------:|
 | O1 | Read-only access to results | Log in as observer. View analytics. Attempt election edit. | Analytics visible. Edit denied. | Observer views analytics. Edit redirects with permission error. | ✅ Pass |
 | O2 | Turnout summaries | Log in as observer. Access analytics. | Turnout data visible. | Overall turnout and year group breakdown displayed. | ✅ Pass |
+| O3 | Access published results from Management menu | Log in as observer. Click Management → Results. | Published results page displayed. | Observer can view published results list and click through to individual results pages. | ✅ Pass |
 
 ---
 
@@ -107,6 +110,15 @@ Each user story from the project planning phase was tested manually. Results are
 | Read | Clicked candidate name | Detail page loads | Photo, manifesto, details displayed. | ✅ Pass |
 | Update | Edited manifesto | Updated text visible | Manifesto updated. | ✅ Pass |
 | Delete | Deleted candidate | Candidate removed | Deleted. Associated votes removed. | ✅ Pass |
+
+### Results Access
+
+| Operation | Action | Expected | Actual | Pass/Fail |
+|-----------|--------|----------|--------|:---------:|
+| Student results | Navigate to `/results/1/` for published election | Results page with vote counts and charts | Results displayed with progress bars, percentages, and "Leading" badge on top candidate. | ✅ Pass |
+| Unpublished results | Navigate to `/results/<id>/` for unpublished election | Redirect with error message | "Results have not been published yet" error. Redirected to dashboard. | ✅ Pass |
+| Published results list | Navigate to `/management/results/` | List of closed elections with published results | Election cards displayed with View Results, Analytics, and Export CSV buttons. | ✅ Pass |
+| Empty results list | View `/management/results/` when no elections are closed | "No Published Results" message | Trophy icon with message "Results will appear here once an election is closed and results are published." | ✅ Pass |
 
 ---
 
@@ -157,11 +169,14 @@ Each user story from the project planning phase was tested manually. Results are
 
 | User Role | URL Attempted | Expected | Actual | Pass/Fail |
 |-----------|--------------|----------|--------|:---------:|
-| Not logged in | `/elections/dashboard/` | Redirect to login | Redirected to `/accounts/login/` | ✅ Pass |
+| Not logged in | `/dashboard/` | Redirect to login | Redirected to `/accounts/login/` | ✅ Pass |
+| Not logged in | `/results/1/` | Redirect to login | Redirected to `/accounts/login/` | ✅ Pass |
 | Student | `/management/` | Access denied | Redirected with permission error | ✅ Pass |
 | Student | `/management/elections/create/` | Access denied | Redirected with permission error | ✅ Pass |
+| Student | `/management/results/` | Access denied | Redirected with permission error | ✅ Pass |
 | Observer | `/management/elections/1/edit/` | Access denied | Redirected with permission error | ✅ Pass |
 | Observer | `/management/elections/1/analytics/` | Allowed | Analytics page displayed | ✅ Pass |
+| Observer | `/management/results/` | Allowed | Published results list displayed | ✅ Pass |
 | Admin | All `/management/` URLs | Full access | All pages accessible | ✅ Pass |
 
 ### CSRF & Secrets Testing
@@ -227,13 +242,14 @@ All pages validated via [W3C Markup Validation Service](https://validator.w3.org
 | Home (`/`) | ✅ No errors |
 | Login (`/accounts/login/`) | ✅ No errors |
 | Register (`/accounts/register/`) | ✅ No errors |
-| Dashboard (`/elections/dashboard/`) | ✅ No errors |
-| Election Detail (`/elections/election/1/`) | ✅ No errors |
-| Cast Vote (`/elections/vote/1/`) | ✅ No errors |
-| Results (`/elections/results/1/`) | ✅ No errors |
+| Dashboard (`/dashboard/`) | ✅ No errors |
+| Election Detail (`/election/1/`) | ✅ No errors |
+| Cast Vote (`/vote/1/`) | ✅ No errors |
+| Results (`/results/1/`) | ✅ No errors |
 | Profile (`/accounts/profile/`) | ✅ No errors |
 | Admin Dashboard (`/management/`) | ✅ No errors |
 | Election List (`/management/elections/`) | ✅ No errors |
+| Published Results (`/management/results/`) | ✅ No errors |
 | Analytics (`/management/elections/1/analytics/`) | ✅ No errors |
 | Audit Logs (`/management/audit-logs/`) | ✅ No errors |
 | 404 Page | ✅ No errors |
@@ -281,6 +297,7 @@ Audits performed using Chrome DevTools on the deployed application.
 | Home | 95 | 98 | 100 | 100 |
 | Dashboard | 92 | 97 | 100 | 100 |
 | Results (with charts) | 88 | 96 | 100 | 100 |
+| Published Results List | 94 | 98 | 100 | 100 |
 | Analytics | 90 | 96 | 100 | 100 |
 
 *Screenshots of Lighthouse results are stored in `docs/lighthouse/`.*
@@ -326,6 +343,30 @@ Audits performed using Chrome DevTools on the deployed application.
 **Description:** `campusvote/urls.py` contained accounts app placeholder instead of project URL configuration, causing the default Django page to show.
 
 **Fix:** Replaced with correct project URLs including all app includes, media serving, and custom error handlers.
+
+**Status:** Fixed.
+
+### Bug 6: Results Page 404 Error
+
+**Description:** Navigating to `/results/1/` returned a 404 "Page Not Found" error despite the URL pattern being correctly defined in `elections/urls.py`. The `results_view` function was missing from `elections/views.py` — the file had been truncated to 76 lines at some point, losing the `election_detail_view`, `candidate_detail_view`, `cast_vote_view`, `results_view`, and custom error handler functions.
+
+**Fix:** Restored the complete `elections/views.py` from Git history (commit `34d6b32`) which contained all 280 lines including the missing view functions.
+
+**Status:** Fixed.
+
+### Bug 7: Results Page Showing "No Approved Candidates" Despite Approved Candidates
+
+**Description:** After restoring the `results_view`, the results page showed vote counts per position but displayed "No approved candidates for this position" for every position, even though all candidates were marked as approved in the database.
+
+**Fix:** The restored `results_view` used the dictionary key `candidate_results` when building the results context, but the `results.html` template expected the key `candidates`. Changed `'candidate_results': candidate_results` to `'candidates': candidate_results` in the view's context dictionary to match the template.
+
+**Status:** Fixed.
+
+### Bug 8: File Encoding Null Bytes Causing Build Failure on Render
+
+**Description:** After restoring `elections/views.py` using PowerShell's `>` redirect operator, the file was saved in UTF-16 encoding with null bytes. Python could not parse the file, causing `SyntaxError: source code string cannot contain null bytes` during Render deployment.
+
+**Fix:** Used Python's `subprocess` module to extract the file content from Git directly in binary mode, bypassing PowerShell's encoding: `python -c "import subprocess; data = subprocess.check_output(['git', 'show', '34d6b32:elections/views.py']); open('elections/views.py', 'wb').write(data)"`
 
 **Status:** Fixed.
 
